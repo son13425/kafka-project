@@ -1,0 +1,36 @@
+#  Команда создания топика с 3 партициями и 2 репликами через консоль
+docker exec -it kafka-kraft-1 kafka-topics.sh \
+  --create \
+  --topic messages_from_frontend \
+  --partitions 3 \
+  --replication-factor 2 \
+  --bootstrap-server localhost:9092
+
+Параметры:
+--topic — имя топика (желаемое название, здесь - messages_from_frontend)
+--partitions 3 — 3 партиции
+--replication-factor 2 — 2 реплики на каждую партицию
+--bootstrap-server localhost:9092 — брокер кластера кафка
+
+Вывод: Created topic messages_from_frontend.
+
+
+#  Команда-проверка создания топика
+docker exec -it kafka-kraft-1 kafka-topics.sh \
+  --list \
+  --bootstrap-server localhost:9092
+
+Вывод: messages_from_frontend
+
+
+#  Детальная информация о топике
+docker exec -it kafka-kraft-1 kafka-topics.sh \
+  --describe \
+  --topic messages_from_frontend \
+  --bootstrap-server localhost:9092
+
+Вывод:
+Topic: messages_from_frontend   TopicId: 0_OB3ZW4Q8GVPEuyMufRfQ PartitionCount: 3       ReplicationFactor: 2    Configs: min.insync.replicas=2
+        Topic: messages_from_frontend   Partition: 0    Leader: 2       Replicas: 2,3   Isr: 2,3
+        Topic: messages_from_frontend   Partition: 1    Leader: 3       Replicas: 3,1   Isr: 3,1
+        Topic: messages_from_frontend   Partition: 2    Leader: 1       Replicas: 1,2   Isr: 1,2
