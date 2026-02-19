@@ -1,88 +1,135 @@
 <script setup>
-import {ref, computed, onUnmounted} from 'vue'
+import { ref, computed, onUnmounted } from "vue";
 
-const URL_API = `${import.meta.env.VITE_API}`
+const URL_API = `${import.meta.env.VITE_API}`;
 
-const dataTransmission = ref(false)
-const intervalMany = ref(null)
-const intervalOne = ref(null)
+const dataTransmission = ref(false);
+const intervalMany = ref(null);
+const intervalOne = ref(null);
 
-const nameStatus = computed(() => dataTransmission.value ? 'Сообщения отправляются' : 'Сообщения не отправляютя')
-const nameButtonTransmission = computed(() => dataTransmission.value ? 'Остановить передачу сообщений' : 'Включить передачу сообщений')
+const nameStatus = computed(() =>
+  dataTransmission.value
+    ? "Сообщения отправляются"
+    : "Сообщения не отправляютя",
+);
+const nameButtonTransmission = computed(() =>
+  dataTransmission.value
+    ? "Остановить передачу сообщений"
+    : "Включить передачу сообщений",
+);
 
 onUnmounted(() => {
-  if (intervalMany.value) clearInterval(intervalMany.value)
-  if (intervalOne.value) clearInterval(intervalOne.value)
-})
+  if (intervalMany.value) clearInterval(intervalMany.value);
+  if (intervalOne.value) clearInterval(intervalOne.value);
+});
 
 function setStatusTransmission() {
-  dataTransmission.value = !dataTransmission.value
+  dataTransmission.value = !dataTransmission.value;
   if (dataTransmission.value) {
     intervalMany.value = setInterval(() => {
-      sendOneMessage('many')
-    }, 1000)
+      sendOneMessage("many");
+    }, 1000);
     intervalOne.value = setInterval(() => {
-      sendOneMessage('one')
-    }, 10000)
-    sendOneMessage('many')
-    sendOneMessage('one')
+      sendOneMessage("one");
+    }, 10000);
+    sendOneMessage("many");
+    sendOneMessage("one");
   } else {
     if (intervalMany.value) {
-      clearInterval(intervalMany.value)
-      intervalMany.value = null
+      clearInterval(intervalMany.value);
+      intervalMany.value = null;
     }
     if (intervalOne.value) {
-      clearInterval(intervalOne.value)
-      intervalOne.value = null
+      clearInterval(intervalOne.value);
+      intervalOne.value = null;
     }
   }
 }
 
 function sendOneMessage(keyMessage) {
-  const textMsg = keyMessage === 'one' ? 'Одиночное сообщение' : 'Пакетное сообщение'
-  const currentDate = new Date()
-  const isoDate = currentDate.toISOString()
-  try {  
+  const textMsg =
+    keyMessage === "one" ? "Одиночное сообщение" : "Пакетное сообщение";
+  const currentDate = new Date();
+  const isoDate = currentDate.toISOString();
+  try {
     fetch(`${URL_API}/message`, {
-      method: 'POST',
-      headers: {'content-type': 'application/json'},
-      body: JSON.stringify({key: keyMessage, msg: `${isoDate}: ${textMsg}`})
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ key: keyMessage, msg: `${isoDate}: ${textMsg}` }),
     })
-    .then(response => {
-      if (response.ok) {
-        return response.json()
-        .then((res) => {
-          console.log('Cooбщение отправлено!')
-          console.log(res.msg)
-        })
-      } else {
-        console.error('Ошибка отправки сообщения: ', response.status)
-      }
-    })
-    .catch(err => {
-      console.error('Ошибка сети: ', err)
-    })
-  } catch(error) {
-    console.error('Ошибка в sendOneMessage(): ', error)
+      .then((response) => {
+        if (response.ok) {
+          return response.json().then((res) => {
+            console.log("Cooбщение отправлено!");
+            console.log(res.msg);
+          });
+        } else {
+          console.error("Ошибка отправки сообщения: ", response.status);
+        }
+      })
+      .catch((err) => {
+        console.error("Ошибка сети: ", err);
+      });
+  } catch (error) {
+    console.error("Ошибка в sendOneMessage(): ", error);
   }
 }
 </script>
 
 <template>
-  <div>
-    <p>Состояние отправки сообщений: 
-      <span :class="{
-        'status-transmission-active': dataTransmission === true, 
-        'status-transmission-unactive': dataTransmission === false
-      }">
-        {{ nameStatus }}
-      </span>
-    </p>
-    <button @click="setStatusTransmission">{{nameButtonTransmission}}</button>
+  <div class="body-window">
+    <div class="pr-1">
+      <p>
+        Состояние отправки сообщений:
+        <span
+          :class="{
+            'status-transmission-active': dataTransmission === true,
+            'status-transmission-unactive': dataTransmission === false,
+          }"
+        >
+          {{ nameStatus }}
+        </span>
+      </p>
+      <button @click="setStatusTransmission">
+        {{ nameButtonTransmission }}
+      </button>
+    </div>
+    <div class="pr-2">
+      <p>
+        Состояние отправки сообщений:
+        <span
+          :class="{
+            'status-transmission-active': dataTransmission === true,
+            'status-transmission-unactive': dataTransmission === false,
+          }"
+        >
+          {{ nameStatus }}
+        </span>
+      </p>
+      <button @click="setStatusTransmission">
+        {{ nameButtonTransmission }}
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.body-window {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.pr-1 {
+  background-color: red;
+}
+
+.pr-2 {
+  background-color: green;
+}
+
 .status-transmission-active {
   color: green;
 }

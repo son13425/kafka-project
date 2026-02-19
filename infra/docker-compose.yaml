@@ -10,7 +10,7 @@ services:
     env_file:
       - ../backend/.env.backend
     working_dir: /app/app
-  
+
   backend2:
     build: ../backend
     container_name: backend2
@@ -72,7 +72,7 @@ services:
       - .env.kafka
     volumes:
       - kraft3_data:/bitnami/kafka
-  
+
   schema-registry:
     image: confluentinc/cp-schema-registry:latest
     container_name: schema-registry
@@ -83,6 +83,20 @@ services:
     restart: unless-stopped
     env_file:
       - .env.kafka
+
+  faust-stream:
+    build: ../kafka_streams
+    container_name: faust-stream
+    command: python faust_app.py
+    volumes:
+      - ../kafka_streams:/app
+    env_file:
+      - ../kafka_streams/.env.streams
+    depends_on:
+      - kafka-kraft-1
+      - kafka-kraft-2
+      - kafka-kraft-3
+    restart: unless-stopped
 
   # UI для KRaft кластера
   kafka-ui-kraft:
@@ -95,7 +109,7 @@ services:
       - schema-registry
     env_file:
       - .env.kafka
-  
+
   nginx:
     image: nginx:1.21.3-alpine
     container_name: nginx
