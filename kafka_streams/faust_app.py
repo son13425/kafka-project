@@ -26,7 +26,9 @@ logger = logging.getLogger(__name__)
 app = faust.App(
     "message-processing-app",
     broker=kafka_bootstrap_servers,
-    value_serializer="raw",  # Работа с байтами (default: "json")
+    value_serializer="json",
+    web_host="0.0.0.0",
+    web_port=6066
 )
 
 
@@ -72,8 +74,7 @@ filtered_messages_topic = app.topic(
 # Таблица для хранения заблокированых пользователей и запрещенных слов
 blocked_user_table = app.Table(
     'blocked_user_table',
-    default=lambda: [],
-    partitions=1
+    default=lambda: []
 )
 
 
@@ -91,7 +92,7 @@ async def process_blocked_users(stream):
                             '%s в список запрещенных', value.blocked_user_id)
             else:
                 logger.info('Получено сообщение о блокировке пользователя '
-                            '%s для пользователя %d',
+                            '%s для пользователя %s',
                             value.blocked_user_id, value.user_id)
             list_id.add(value.blocked_user_id)
         else:
@@ -100,16 +101,16 @@ async def process_blocked_users(stream):
                             '%s из списка запрещенных', value.blocked_user_id)
             else:
                 logger.info('Получено сообщение о разблокировке пользователя '
-                            '%s для пользователя %d',
+                            '%s для пользователя %s',
                             value.blocked_user_id, value.user_id)
-            list_id.pop(value.blocked_user_id)
+            list_id.discard(value.blocked_user_id)
         blocked_user_table[value.user_id] = list(list_id)
         if value.action == 'blocked':
             if value.user_id == 'forbidden_words':
                 logger.info('Слово %s добавлено в список запрещенных',
                             value.blocked_user_id)
             else:
-                logger.info('Пользователь %s заблокирован для пользователя %d',
+                logger.info('Пользователь %s заблокирован для пользователя %s',
                             value.blocked_user_id, value.user_id)
         else:
             if value.user_id == 'forbidden_words':
@@ -117,7 +118,7 @@ async def process_blocked_users(stream):
                             value.blocked_user_id)
             else:
                 logger.info(
-                    'Пользователь %s разблокирован для пользователя %d',
+                    'Пользователь %s разблокирован для пользователя %s',
                     value.blocked_user_id,
                     value.user_id
                 )
@@ -131,12 +132,12 @@ async def process_filtered_messages(stream):
     """
     async for value in stream:
         logger.info(
-            'Получено сообщение от пользователя %s для пользователя %d',
+            'Получено сообщение от пользователя %s для пользователя %s',
             value.user_id,
             value.recipient_id
         )
         if value.user_id in blocked_user_table[value.recipient_id]:
-            logger.info('Пользователь %s заблокирован для пользователя %d.'
+            logger.info('Пользователь %s заблокирован для пользователя %s.'
                         'Сообщение отброшено',
                         value.user_id,
                         value.recipient_id)
@@ -148,11 +149,11 @@ async def process_filtered_messages(stream):
                 message_text = message_text.replace(forbidden_word, '')
             message_text = ' '.join(message_text.split())
             value.message = message_text
-            logger.info('Сообщение от пользователя %s для пользователя %d '
+            logger.info('Сообщение от пользователя %s для пользователя %s '
                         'очищено от запрещенных слов', value.user_id,
                         value.recipient_id)
         await filtered_messages_topic.send(value=value)
-        logger.info('Сообщение от пользователя %s для пользователя %d '
+        logger.info('Сообщение от пользователя %s для пользователя %s '
                     'отправлено в Кафка-топис filtered_messages_topic',
                     value.user_id, value.recipient_id)
 

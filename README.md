@@ -1,4 +1,4 @@
-# Kafka-Проект 
+# Kafka-Проект
 
 ## Описание проекта
 Настройка кластера Kafka и реализация продюсера с двумя консьюмерами
@@ -38,6 +38,12 @@
   - http://localhost/api/openapi# - API сервера приложения;
 
   - http://localhost/kafka-ui/ui/clusters/kraft-cluster/ - UI-кафка;
+
+  - http://localhost/schema-registry/ - UI-ShemaRegistry;
+
+  - http://localhost:6066/ - UI-Faust;
+
+Для запуска практической работы кликните по кнопке запуска работы с нужным номером.
 
 
 ## Автор

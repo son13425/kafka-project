@@ -33,7 +33,8 @@ async def set_user_message(
         )
     success = producer.send_message(
         key='user_msg',
-        value=data_msg
+        topic='messages_topic',
+        message=data_msg.model_dump_json()
     )
     if not success:
         logger.info("Ошибка при отправке простого сообщения в Kafka")
@@ -73,7 +74,8 @@ async def set_blocked_user(
         )
     success = producer.send_message(
         key='user_msg',
-        value=data_msg
+        topic='blocked_users_topic',
+        message=data_msg.model_dump_json()
     )
     if not success:
         logger.info("Ошибка при отправке сообщения о блокировке в Kafka")

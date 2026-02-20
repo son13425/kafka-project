@@ -181,8 +181,7 @@ function sendStatusBlocked() {
   const timestamp = new Date().toISOString();
 
   // Назначаем действие
-  const actionIndex = Math.floor(Math.random() * arrAction.length);
-  const action = arrAction[actionIndex];
+  const action = blockedMessageCount.value % 2 === 0 ? 'unblocked' : 'blocked';
 
   // Отправка POST-запроса
   try {
