@@ -87,7 +87,9 @@ services:
   faust-stream:
     build: ../kafka_streams
     container_name: faust-stream
-    command: python faust_app.py
+    command: python faust_app.py worker --loglevel info
+    ports:
+      - 6066:6066
     volumes:
       - ../kafka_streams:/app
     env_file:
